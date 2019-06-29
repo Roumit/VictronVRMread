@@ -1,0 +1,4 @@
+node_modules
+*.tmp
+~*.*
+login_pass.js

@@ -1,0 +1,15 @@
+{
+  "name": "vrmapi",
+  "version": "1.0.0",
+  "description": "VRM API data receiver",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "Timur Belotserkovsky",
+  "license": "ISC",
+  "dependencies": {
+    "request": "^2.88.0"
+  }
+}

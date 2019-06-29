@@ -1,0 +1,22 @@
+url: https://vrmapi.victronenergy.com
+
+
+1. Auorization: don`t save login/password, ask them every run
+
+POST /v2/auth/login
+{
+    "username": "john@example.com",
+    "password": "secret-passw0rd"
+}
+
+From responce:
+	take "token" and add to request header:
+
+		X-Authorization: Bearer {token}
+
+	save "idUser"
+
+2. GET https://vrmapi.victronenergy.com/v2/users/{idUser}/installations
+From responce save installatios with ids and parameters
+
+3. GET https://vrmapi.victronenergy.com/v2/installations/{installationId}/stats?type=kwh
