@@ -1,0 +1,31 @@
+.conteiner {
+    position: absolute;
+    text-align: center ;
+    width: 100%;
+    max-width: 1000px;
+    min-width: 500px;
+}
+
+
+.left-side {
+    position: absolute;
+    width: 70%;
+    text-align: left;
+}
+
+.right-side {
+    position: absolute;
+    width: 30%;
+    left: 70%;
+    text-align: left;
+}
+
+.link-list {
+    color: blue;
+    text-decoration: underline;
+}
+
+.link-list:hover {
+    color: black;
+    cursor: pointer;
+}

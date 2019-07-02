@@ -1,101 +1,76 @@
+"use strict";
 
-
-const request = require('request');
 const login_pass = require('./login_pass.js');
-
+const axios = require('axios');
+import {writeInstallationsList} from "./domCreate";
+import {getAxiosRequest} from "./getRequest";
 
 
 //APIs:
 // https://vrmapi.victronenergy.com/v2/auth/login
 // /v2/users/{idUser}/installations
 
-const url = "https://vrmapi.victronenergy.com";
+export const targetUrl = "https://vrmapi.victronenergy.com";
 const authApi = "/v2/auth/login";
 
 
-//This will be asked
-let username = login_pass.username;
-let password = login_pass.password;
-
 let idUser;
 let loginStatus = false;
-const headerWithToken = {};
+export const headerWithToken = {};
+let installations_arr = [];
 
-//login(username, password);
-// function login(login, password, callback) {
-//     request(url + authApi, {method: "GET", body: `{"username": "${username}", "password": "${password}"}`}, (err, res, body) => {
-//         if (err) {
-//             console.log(err);
-//             return;
-//         }
-//         if (res.statusCode == 200) {
-//             let user_token = JSON.parse(body);
-//             let token = user_token.token;
-//             let userId = user_token.idUser;
-//             loginStatus = true;
-//             idUser = userId; 
-            
-//             callback(userId, token);
-//         }
-//     }); 
-// };
+document.querySelector('.right-content').innerHTML = '<button id="loginButton">Login</button>';
+document.getElementById('loginButton').addEventListener('click', toLogin, false);
 
+function toLogin(){
 
-// login(username, password, (userId, token) => {
-//     console.log(userId, token);
-//     headerWithToken['X-Authorization'] = 'Bearer ' + token;
-//     getInstallations(idUser);
-
-    //here we do wisible buttons of receiving other information
-
-// });
-
-function login(login, password) {
-    return new Promise((resolve, reject) => {
-        request(url + authApi, {method: "GET", body: `{"username": "${username}", "password": "${password}"}`}, (err, res, body) => {
-            if (err) {
-                console.log(err);
-                reject(err);
-            }
-            if (res.statusCode == 200) {
-                let user_token = JSON.parse(body);
-                idUser = user_token.idUser;
-                loginStatus = true;
-                resolve(user_token);
-            }
-        });
+    //It will be changed !!!
+    let username = prompt('username: ', login_pass.username);
+    let password = prompt('password: ', login_pass.password);
+    axios({
+        method:'post',
+        url: targetUrl + authApi,
+        data: `{"username": "${username}", "password": "${password}"}`
+    })
+    .then(function(response){
+        headerWithToken['X-Authorization'] = 'Bearer ' + response.data.token;
+        idUser = response.data.idUser;
+        getInstallations();
+    })
+    .catch(function(err){
+        console.log(`login error: ${err}`);
     });
-     
 };
 
+function getInstallations(){
+    document.querySelector('.right-content').innerHTML += '<button id="installationsButton">get Installations</button>';
 
-login(username, password).then((user_token, token) => {
-    console.log(user_token);
-    headerWithToken['X-Authorization'] = 'Bearer ' + user_token.token;
-    getInstallations(idUser);
-});
-
-
-console.log('timing test');
-
-function getInstallations(idUser){
+    document.getElementById('installationsButton').addEventListener('click', () => {
     const installationsApi = `/v2/users/${idUser}/installations`;
-
-    request(url + installationsApi, {method:'GET', headers: headerWithToken}, (err, res, body) => {
-        if (err){
-            console.log(err);
-            return;
-        }
-        if (res.statusCode == 200){
-            let message = JSON.parse(body);
-            if (message.success == true){
-                message.records.forEach((elem) => console.log(elem.idSite + " : " + elem.name));
-                //console.log(message);
-            }
-        }
-    });
+    axios({
+        method:'post',
+        url: targetUrl + installationsApi,
+        headers: headerWithToken
+    })
+    .then((responce) => {
+        installations_arr = responce.data.records;
+        console.log(installations_arr);
+        let idList = writeInstallationsList(installations_arr);
+        idList.forEach((id) => {
+            document.getElementById(id).addEventListener('click', () => {
+                getAxiosRequest(targetUrl, '/v2/installations/',
+                id, '/system-overview').then((responce) => {
+                    console.log(responce);
+                });
+                getAxiosRequest(targetUrl, '/v2/installations/',
+                id, '/stats?type=kwh').then((responce) => {
+                   document.getElementById('system-information').innerHTML = `Last 24h  ${responce.data.totals.kwh} kWh`;
+                });
+            }, false);
+        });
+    })
+    .catch((err) => {
+        console.log(err);
+    })
+}, false);
 };
-
-
-
-
